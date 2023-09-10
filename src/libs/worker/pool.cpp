@@ -1,4 +1,3 @@
-#include "pool.hpp"
 #include "vector"
 #include "queue"
 #include "thread"

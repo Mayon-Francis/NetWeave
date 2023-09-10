@@ -4,5 +4,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include_directories(${CMAKE_SOURCE_DIR}/src/libs)
-add_executable(${PROJECT_NAME} ./src/main.cpp)
+include_directories(${CMAKE_SOURCE_DIR}/src/utils)
+add_executable(Server ./src/server.cpp)
+add_executable(Client ./src/client.cpp)
 add_executable(Test ./tests/main.cpp)
