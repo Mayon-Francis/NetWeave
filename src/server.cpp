@@ -380,6 +380,9 @@ int main()
     epoll_ctl(e_main_stop, EPOLL_CTL_ADD, stop_fd, &e_stop_event);
 
     int workerCount = std::thread::hardware_concurrency() / 2;
+    if(workerCount < 1) {
+        workerCount = 1;
+    }
     WorkerPool<void(), void> pool(workerCount);
 
     for(int i=0; i<workerCount; i++) {
