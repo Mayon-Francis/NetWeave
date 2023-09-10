@@ -263,11 +263,6 @@ void clientMonitor()
                     if (n == 0)
                     {
                         logger.info("Client disconnected\n");
-                        // int s = epoll_ctl(e_fd, EPOLL_CTL_DEL, sockFd, &event);
-                        // if (s == -1)
-                        // {
-                        //     logger.crash("EPOLL_CTL_DEL");
-                        // }
                         disconnectClient(sockFd);
                     }
 
@@ -377,9 +372,6 @@ int main()
         logger.crash("EPOLL_CTL_ADD masterSockFd");
     }
 
-    // monitorThread = std::thread(clientMonitor);
-    // monitorThread2 = std::thread(clientMonitor);
-
     int e_main_stop = epoll_create(1);
     struct epoll_event e_stop_events[1];
     struct epoll_event e_stop_event;
@@ -413,6 +405,4 @@ int main()
 
     close(e_fd);
     close(masterSockFd);
-    // monitorThread.join();
-    // monitorThread2.join();
 }
