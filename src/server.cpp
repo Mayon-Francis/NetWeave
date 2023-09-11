@@ -17,7 +17,10 @@
 
 // Custom
 #include "ip/server_ip.cpp"
+
+#define enable_debug 0
 #include "debug_log/debug.cpp"
+
 #include "worker/pool.cpp"
 #include "thread_id.cpp"
 #include "logger.cpp"
