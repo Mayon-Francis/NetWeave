@@ -3,8 +3,7 @@
 A multithreaded C++ chat server with a worker pool and client
 
 ### Demo
-
-<video src="assets/NetWeaveDemo.mp4" controls title="file.pdf"></video>
+![](https://raw.githubusercontent.com/Mayon-Francis/NetWeave/main/assets/NetWeaveDemo.mp4)
 
 ### Requirements for now
 
