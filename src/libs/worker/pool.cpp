@@ -5,8 +5,10 @@
 #include "condition_variable"
 #include "functional"
 #include "type_traits"
-#include "debug_log/debug.cpp"
 #include "future"
+
+#include "debug_log/debug.cpp"
+#include "thread_id.cpp"
 
 template <class F, class R = std::result_of_t<F &()>, typename ...Args>
 class WorkerPool
@@ -34,7 +36,7 @@ private:
             // prioritize stopping if stop is requested
             if (stop)
             {
-                debug("Thread %zu Stopping\n", std::hash<std::thread::id>{}(std::this_thread::get_id()));
+                debug("Thread %zu Stopping\n", this_thread_id);
                 return;
             }
 
@@ -46,9 +48,9 @@ private:
                 // Unlock before executing the task
                 // otherwise worker execution will not be parallel
                 lock.unlock();
-                debug("Thread %zu Starting task\n", std::hash<std::thread::id>{}(std::this_thread::get_id()));
+                debug("Thread %zu Starting task\n", this_thread_id);
                 task();
-                debug("Thread %zu Finished task\n", std::hash<std::thread::id>{}(std::this_thread::get_id()));
+                debug("Thread %zu Finished task\n", this_thread_id);
             }
         }
     }

@@ -17,9 +17,10 @@
 
 // Custom
 #include "ip/server_ip.cpp"
-#include "logger.cpp"
 #include "debug_log/debug.cpp"
 #include "worker/pool.cpp"
+#include "thread_id.cpp"
+#include "logger.cpp"
 
 #define PORT 5000
 #define MAX_MSG_LEN 256
@@ -165,6 +166,7 @@ void disconnectClient(int sockFd)
     std::unique_lock<std::mutex> lock(all_cli_mutex);
     all_cli_cond.wait(lock, [&]()
                       { return !!all_cli_avail; });
+
     all_cli_avail = false;
     int s = epoll_ctl(e_fd, EPOLL_CTL_DEL, sockFd, &event);
     if (s == -1)
@@ -172,15 +174,15 @@ void disconnectClient(int sockFd)
         logger.crash("EPOLL_CTL_DEL");
     }
     close(sockFd);
-    removeClient(sockFd);
+
     int index = getIndexFromFd(sockFd);
     char broadcastMsg[MAX_MSG_LEN];
     int ret = sprintf(broadcastMsg, "%s has disconnected", usernames[index]);
     if (ret < 0)
         logger.error("ERROR in sprintf");
-
-    all_cli_avail = true;
     sendMessageToAllClientsWithoutLock(broadcastMsg, sockFd);
+    removeClient(sockFd);
+
     all_cli_avail = true;
 }
 
@@ -207,13 +209,13 @@ void clientMonitor()
         }
         else
         {
-            debug("Thread %zu Recieved epoll event\n", std::hash<std::thread::id>{}(std::this_thread::get_id()));
+            debug("Thread %zu Recieved epoll event\n", this_thread_id);
             for (int i = 0; i < e_r_val; i++)
             {
                 int sockFd = events[i].data.fd;
                 if (sockFd == stop_fd)
                 {
-                    debug("Stopping monitor thread %zu \n", std::hash<std::thread::id>{}(std::this_thread::get_id()));
+                    debug("Stopping monitor thread %zu \n", this_thread_id);
                     return;
                 }
                 else if (sockFd == masterSockFd)
@@ -245,7 +247,7 @@ void clientMonitor()
                     {
                         logger.crash("EPOLL_CTL_DEL");
                     }
-                    close(sockFd);
+                    disconnectClient(sockFd);
                     continue;
                 }
                 else
@@ -380,12 +382,14 @@ int main()
     epoll_ctl(e_main_stop, EPOLL_CTL_ADD, stop_fd, &e_stop_event);
 
     int workerCount = std::thread::hardware_concurrency() / 2;
-    if(workerCount < 1) {
+    if (workerCount < 1)
+    {
         workerCount = 1;
     }
     WorkerPool<void(), void> pool(workerCount);
 
-    for(int i=0; i<workerCount; i++) {
+    for (int i = 0; i < workerCount; i++)
+    {
         pool.add_task(&clientMonitor);
     }
 
